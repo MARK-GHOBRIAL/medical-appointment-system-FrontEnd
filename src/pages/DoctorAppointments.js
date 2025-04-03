@@ -11,36 +11,28 @@ const DoctorAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const data = await apiService.getDoctorAppointments(user._id)
+        const data = await apiService.getDoctorAppointments()
         setAppointments(data)
-        setLoading(false)
       } catch (err) {
-        setError('Failed to fetch appointments')
+        setError(err.message)
+      } finally {
         setLoading(false)
       }
     }
 
-    if (user) {
-      fetchAppointments()
-    }
-  }, [user])
+    fetchAppointments()
+  }, [])
 
   const handleComplete = async (appointmentId) => {
     try {
-      // This would call your backend API to mark appointment as completed
-      await fetch(`${API_BASE_URL}/appointments/${appointmentId}/complete`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
+      await apiService.completeAppointment(appointmentId)
       setAppointments(
         appointments.map((a) =>
-          a._id === appointmentId ? { ...a, status: 'completed' } : a
+          a.id === appointmentId ? { ...a, status: 'COMPLETED' } : a
         )
       )
     } catch (err) {
-      setError('Failed to update appointment status')
+      setError(err.message)
     }
   }
 
@@ -66,18 +58,18 @@ const DoctorAppointments = () => {
           </thead>
           <tbody>
             {appointments.map((appointment) => (
-              <tr key={appointment._id}>
+              <tr key={appointment.id}>
                 <td>{new Date(appointment.date).toLocaleDateString()}</td>
                 <td>{appointment.time}</td>
                 <td>{appointment.patient.name}</td>
                 <td>{appointment.status}</td>
                 <td>
-                  {appointment.status === 'confirmed' && (
+                  {appointment.status === 'CONFIRMED' && (
                     <button
                       className="btn btn-success btn-sm"
-                      onClick={() => handleComplete(appointment._id)}
+                      onClick={() => handleComplete(appointment.id)}
                     >
-                      Mark as Completed
+                      Complete
                     </button>
                   )}
                 </td>
