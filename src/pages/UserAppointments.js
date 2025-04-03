@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react'
 import { apiService } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -11,27 +12,25 @@ const UserAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const data = await apiService.getUserAppointments(user._id)
+        const data = await apiService.getUserAppointments()
         setAppointments(data)
-        setLoading(false)
       } catch (err) {
-        setError('Failed to fetch appointments')
+        setError(err.message)
+      } finally {
         setLoading(false)
       }
     }
 
-    if (user) {
-      fetchAppointments()
-    }
-  }, [user])
+    fetchAppointments()
+  }, [])
 
   const handleCancel = async (appointmentId) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
       try {
         await apiService.cancelAppointment(appointmentId)
-        setAppointments(appointments.filter((a) => a._id !== appointmentId))
+        setAppointments(appointments.filter((a) => a.id !== appointmentId))
       } catch (err) {
-        setError('Failed to cancel appointment')
+        setError(err.message)
       }
     }
   }
@@ -59,17 +58,17 @@ const UserAppointments = () => {
           </thead>
           <tbody>
             {appointments.map((appointment) => (
-              <tr key={appointment._id}>
+              <tr key={appointment.id}>
                 <td>{new Date(appointment.date).toLocaleDateString()}</td>
                 <td>{appointment.time}</td>
                 <td>{appointment.doctor.name}</td>
                 <td>{appointment.doctor.specialty}</td>
                 <td>{appointment.status}</td>
                 <td>
-                  {appointment.status === 'confirmed' && (
+                  {appointment.status === 'CONFIRMED' && (
                     <button
                       className="btn btn-danger btn-sm"
-                      onClick={() => handleCancel(appointment._id)}
+                      onClick={() => handleCancel(appointment.id)}
                     >
                       Cancel
                     </button>
