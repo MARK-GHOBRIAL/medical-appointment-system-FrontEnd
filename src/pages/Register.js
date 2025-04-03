@@ -1,3 +1,4 @@
+// src/pages/Register.js
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -7,8 +8,9 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    role: 'patient',
+    role: 'USER', 
   })
+
   const [error, setError] = useState('')
   const { register } = useAuth()
   const navigate = useNavigate()
@@ -21,11 +23,22 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
     try {
-      await register({
-        username: formData.email,
+      
+      const registerData = {
+        name: formData.name,
+        email: formData.email,
         password: formData.password,
-      })
+        role:
+          formData.role === 'USER'
+            ? Role.ROLE_USER
+            : formData.role === 'DOCTOR'
+            ? Role.ROLE_DOCTOR
+            : Role.ROLE_ADMIN,
+      }
+
+      await register(registerData)
       navigate('/login')
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.')
@@ -78,6 +91,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength="6"
             />
           </div>
           <div className="mb-3">
@@ -92,9 +106,9 @@ const Register = () => {
               onChange={handleChange}
               required
             >
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-              <option value="admin">Admin</option>
+              <option value="USER">Patient</option>
+              <option value="DOCTOR">Doctor</option>
+              <option value="ADMIN">Admin</option>
             </select>
           </div>
           <button type="submit" className="btn btn-primary w-100">
@@ -104,6 +118,13 @@ const Register = () => {
       </div>
     </div>
   )
+}
+
+// Enum per i ruoli come nel backend
+const Role = {
+  ROLE_USER: 'ROLE_USER',
+  ROLE_DOCTOR: 'ROLE_DOCTOR',
+  ROLE_ADMIN: 'ROLE_ADMIN',
 }
 
 export default Register
