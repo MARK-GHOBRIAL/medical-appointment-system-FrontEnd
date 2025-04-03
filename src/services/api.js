@@ -7,32 +7,45 @@ export const apiService = {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: email,
-        password,
-      }),
+      body: JSON.stringify({ username: email, password }),
     })
+
+    if (!response.ok) throw new Error('Login failed')
+
     const data = await response.json()
 
-    if (data.token) {
-      const userResponse = await fetch(`${API_BASE_URL}/auth/current-user`, {
-        headers: {
-          Authorization: `Bearer ${data.token}`,
-        },
-      })
-      const userData = await userResponse.json()
-      return { token: data.token, user: userData }
+    if (!data.token || !data.user) {
+      throw new Error('Invalid response format')
     }
     return data
   },
 
   register: async (userData) => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    })
-    return await response.json()
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          role: userData.role || 'patient',
+        }),
+      })
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Registration failed')
+      }
+
+      return responseData
+    } catch (error) {
+      console.error('Registration error:', error)
+      throw error
+    }
   },
 
   // Appointments endpoints
