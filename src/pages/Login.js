@@ -1,3 +1,4 @@
+// src/pages/Login.js
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -12,11 +13,12 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+
     try {
-      await login(email, email, password) // Passa email sia come username che come email
+      await login(email, password)
       navigate('/')
     } catch (err) {
-      setError('Invalid credentials')
+      setError(err.message || 'Invalid email or password')
     }
   }
 
@@ -24,7 +26,21 @@ const Login = () => {
     <div className="row justify-content-center mt-5">
       <div className="col-md-6">
         <h2 className="text-center mb-4">Login</h2>
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && (
+          <div className="alert alert-danger">
+            {error}
+            {error.includes('credentials') && (
+              <div>
+                <p>Prova con:</p>
+                <ul>
+                  <li>Admin: admin@clinica.com / adminpassword</li>
+                  <li>Dottore: doctor@clinica.com / doctorpassword</li>
+                  <li>Paziente: user@clinica.com / userpassword</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
         <form onSubmit={handleLogin}>
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
