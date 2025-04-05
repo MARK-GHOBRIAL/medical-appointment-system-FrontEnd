@@ -29,17 +29,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const data = await apiService.login(email, password)
+      const response = await apiService.login(email, password)
 
-      if (!data.token || !data.user) {
+      if (!response.token || !response.user) {
         throw new Error('Authentication failed')
       }
 
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('token', data.token)
+      const userData = {
+        _id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role.toLowerCase(), 
+      }
 
-      setUser(data.user)
-      return data.user
+      localStorage.setItem('user', JSON.stringify(userData))
+      localStorage.setItem('token', response.token)
+
+      setUser(userData)
+      return userData
     } catch (error) {
       console.error('Login error:', error)
       throw error
