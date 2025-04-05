@@ -10,41 +10,36 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      const storedUser = localStorage.getItem('user')
       const token = localStorage.getItem('token')
-      if (token) {
+
+      if (storedUser && token) {
         try {
-          const userData = await apiService.getCurrentUser()
-          setUser(userData)
-        } catch (error) {
-          console.error('Token validation failed:', error)
+          setUser(JSON.parse(storedUser))
+        } catch (err) {
+          console.error('Token validation failed:', err)
           logout()
         }
       }
       setLoading(false)
     }
+
     initializeAuth()
   }, [])
 
   const login = async (email, password) => {
     try {
-      const response = await apiService.login(email, password)
+      const data = await apiService.login(email, password)
 
-      const { accessToken: token, user: userData } = response
-
-      if (!token || !userData) {
-        throw new Error('Invalid login response')
+      if (!data.token || !data.user) {
+        throw new Error('Authentication failed')
       }
 
-      const normalizedUser = {
-        ...userData,
-        role: userData.role.replace('ROLE_', ''),
-      }
+      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('token', data.token)
 
-      setUser(normalizedUser)
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(normalizedUser))
-
-      return normalizedUser
+      setUser(data.user)
+      return data.user
     } catch (error) {
       console.error('Login error:', error)
       throw error
@@ -62,9 +57,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('token')
+    setUser(null)
   }
 
   return (
