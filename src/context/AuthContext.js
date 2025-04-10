@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         _id: response.user.id,
         name: response.user.name,
         email: response.user.email,
-        role: response.user.role.toLowerCase(), 
+        role: response.user.role.toLowerCase(),
       }
 
       localStorage.setItem('user', JSON.stringify(userData))
